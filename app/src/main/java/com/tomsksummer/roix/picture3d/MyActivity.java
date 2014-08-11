@@ -1,16 +1,20 @@
 package com.tomsksummer.roix.picture3d;
 
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import com.tomsksummer.roix.picture3d.GLEngine.mSurfaceView;
 
 
-public class MyActivity extends Activity {
+public class MyActivity extends Activity implements View.OnClickListener {
 
     private mSurfaceView mGLSurfaceView;
     private SensorManager sensorManager;
@@ -26,6 +30,7 @@ public class MyActivity extends Activity {
         mGLSurfaceView = new mSurfaceView(this);
 
         setContentView(mGLSurfaceView);
+
     }
 
     @Override
@@ -74,4 +79,8 @@ public class MyActivity extends Activity {
     };
 
 
+    @Override
+    public void onClick(View v) {
+
+    }
 }

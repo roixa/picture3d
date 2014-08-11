@@ -17,6 +17,7 @@ public class Vertices extends Object {
     public  float rtx, rty, rtz;
 
     private boolean touched;
+    private FloatBuffer encoded;
 
     public Vertices(float plbx, float plby, float plbz,
                     float prbx, float prby, float prbz,
@@ -26,6 +27,7 @@ public class Vertices extends Object {
         rbx=prbx; rby=prby; rbz=prbz;
         ltx=pltx; lty=plty; ltz=pltz;
         rtx=prtx; rty=prty; rtz=prtz;
+        encode();
 
         touched=false;
     }
@@ -36,8 +38,9 @@ public class Vertices extends Object {
         rbx=x+s; rby=y; rbz=0;
         ltx=x; lty=y+s; ltz=0;
         rtx=x+s; rty=y+s; rtz=0;
-
+        encode();
         touched=false;
+
     }
 
     public boolean isTouched(){
@@ -46,6 +49,7 @@ public class Vertices extends Object {
 
     public void setTouch(boolean touched){
         this.touched=touched;
+        //encode();
     }
 
 
@@ -57,6 +61,7 @@ public class Vertices extends Object {
      * */
     public void shift(float z1,float z2,float z3, float z4){
         lbz+=z1; rbz+=z2; ltz+=z3; rtz+=z4;
+        encode();
     }
 
     public void shift(float z){
@@ -83,7 +88,7 @@ public class Vertices extends Object {
         boolean sqrt=pointInVertices(v,rtx,rty);
 
 
-        boolean onTheSquare=sqrb&&sqlb&&sqlt&&sqrt;
+        boolean onTheSquare=sqrb||sqlb||sqlt||sqrt;
 
         if(onTheSquare){
             //Log.d("PictureModel","contains"+String.valueOf(v.lbx)+String.valueOf(v.lby));
@@ -95,21 +100,10 @@ public class Vertices extends Object {
 
 
     public FloatBuffer en(){//encode for loading in gl
-        float [] vertices={ // Vertices for a face
-                lbx, lby, lbz,  // 0. left-bottom-front
-                rbx, rby, rbz,  // 1. right-bottom-front
-                ltx, lty, ltz,  // 2. left-top-front
-                rtx, rty, rtz   // 3. right-top-front
-        };
-
-        ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
-        vbb.order(ByteOrder.nativeOrder()); // Use native byte order
-        FloatBuffer vertexBuffer = vbb.asFloatBuffer(); // Convert from byte to float
-        vertexBuffer.put(vertices);         // Copy data into buffer
-        vertexBuffer.position(0);           // Rewind
-        return vertexBuffer;
-
+        return encoded;
     }
+
+
 
     //distance of touching point to  vertices
     public float distanceTo(float x,float y){
@@ -124,6 +118,22 @@ public class Vertices extends Object {
             dist=dist<tem?dist:tem;
             return dist;
 
+    }
+
+    private void encode(){
+        float [] vertices={ // Vertices for a face
+                lbx, lby, lbz,  // 0. left-bottom-front
+                rbx, rby, rbz,  // 1. right-bottom-front
+                ltx, lty, ltz,  // 2. left-top-front
+                rtx, rty, rtz   // 3. right-top-front
+        };
+
+        ByteBuffer vbb = ByteBuffer.allocateDirect(vertices.length * 4);
+        vbb.order(ByteOrder.nativeOrder()); // Use native byte order
+        FloatBuffer vertexBuffer = vbb.asFloatBuffer(); // Convert from byte to float
+        vertexBuffer.put(vertices);         // Copy data into buffer
+        vertexBuffer.position(0);           // Rewind
+        encoded=vertexBuffer;
     }
 
     private float module(float x, float y){

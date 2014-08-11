@@ -13,16 +13,16 @@ public class PictureModel {
     public final  String TAG="PictureModel";
     public  static final float surfaceSize=4f;//size in gl coordinates
     private static final float scaleFactor=8f;
-    private static final float fingerSize=0.3f;
-    private static final float bendSharp=10f;
+    private static final float fingerSize=0.05f;
     private static final float shift=0.2f;
+
 
     private int width;//of base bitmap
     private int height;
     private int dimension;//max num of polygons in 3d view
     private int cellSize;//one polygon in pixels
     private float scale;//connect normal metric and pixels (or float)
-
+    private float finger;
     private float yBiass;//to remove bug in horizontal photos
 
     private ArrayList<Bitmap> textures;
@@ -58,14 +58,15 @@ public class PictureModel {
         return polygons;
     }
 
-    public void touch(float x,float y){
-       x=x-fingerSize/2f;
-       y=y-fingerSize/2f;
+    public void touch(float x,float y,float z){//z is camz
+        finger=fingerSize*z;
 
-        Vertices finger=new Vertices(x,y,fingerSize);
+        x=x-finger/2f;
+        y=y-finger/2f;
+        Vertices fingerArea=new Vertices(x,y,finger);
         Log.d(TAG,String.valueOf(x));
         for (Vertices v:polygons){
-            if(v.crossedWith(finger)) v.setTouch(true);
+            if(v.crossedWith(fingerArea)) v.setTouch(true);
         }
     }
 
@@ -94,10 +95,12 @@ public class PictureModel {
     private void bendSurface(float shift){
         for (Vertices v:polygons){
             if(v.isTouched()) {
-                float lt=distanceToUntouchedArea(v.ltx,v.lty)*bendSharp;
-                float lb=distanceToUntouchedArea(v.lbx,v.lby)*bendSharp;
-                float rb=distanceToUntouchedArea(v.rbx,v.rby)*bendSharp;
-                float rt=distanceToUntouchedArea(v.rtx,v.rty)*bendSharp;
+                float a=shift/2f;
+                float b=4f/finger;
+                float lt=(float)Math.pow(distanceToUntouchedArea(v.ltx,v.lty)*b,0.5)*a;
+                float lb=(float)Math.pow(distanceToUntouchedArea(v.lbx,v.lby)*b,0.5)*a;
+                float rb=(float)Math.pow(distanceToUntouchedArea(v.rbx,v.rby)*b,0.5)*a;
+                float rt=(float)Math.pow(distanceToUntouchedArea(v.rtx,v.rty)*b,0.5)*a;
                 lt=lt>shift?shift:lt;
                 lb=lb>shift?shift:lb;
                 rb=rb>shift?shift:rb;

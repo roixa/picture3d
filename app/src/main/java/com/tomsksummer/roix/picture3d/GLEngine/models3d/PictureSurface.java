@@ -44,7 +44,7 @@ public class PictureSurface {
         //model=new PictureModel();
         this.context=context;
         Bitmap picture= BitmapFactory.decodeResource(context.getResources(), pictureId);
-        model =new PictureModel(picture,35);
+        model =new PictureModel(picture,45);
         textureIDs=new int[model.getTextures().size()];
     }
 
@@ -60,7 +60,7 @@ public class PictureSurface {
             // Build Texture from loaded bitmap for the currently-bind texture ID
             GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, shapes.get(i), 0);
 
-            shapes.get(i).recycle();
+            //shapes.get(i).recycle();
 
         }
 
@@ -68,8 +68,8 @@ public class PictureSurface {
 
     }
 
-    public void touch(float x,float y){
-        model.touch(x,y);
+    public void touch(float x,float y,float z){
+        model.touch(x,y,z);
     }
 
     public void untouch(){
@@ -94,7 +94,7 @@ public class PictureSurface {
 
         // Build Texture from loaded bitmap for the currently-bind texture ID
         GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
-        bitmap.recycle();
+        //bitmap.recycle();
     }
 
     public void draw(GL10 gl){
@@ -125,16 +125,14 @@ public class PictureSurface {
 
         if (!v.isTouched()) {
             gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-            gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[pos]);
-
         }
 
         else {
             gl.glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-            gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[pos]);
+
         }
 
-
+        gl.glBindTexture(GL10.GL_TEXTURE_2D, textureIDs[pos]);
         gl.glDrawArrays(GL10.GL_TRIANGLE_STRIP, 0, 4);
 
     }

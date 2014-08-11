@@ -23,8 +23,9 @@ public class PictureRenderer implements GLSurfaceView.Renderer, TouchSurfaceList
     private Texture box;
     private PictureSurface pictureSurface;
     private boolean touched;
-    CoordHelper coord;
+    private CoordHelper coord;
 
+    private boolean modeIsDraw;
 
     public void setContext(Context context) {
         base=new AccelModule();
@@ -33,6 +34,7 @@ public class PictureRenderer implements GLSurfaceView.Renderer, TouchSurfaceList
         pictureSurface=new PictureSurface(this.context, R.drawable.room);
         touched=false;
         coord=new CoordHelper(0,0,6);
+        modeIsDraw=true;
     }
 
 
@@ -74,7 +76,7 @@ public class PictureRenderer implements GLSurfaceView.Renderer, TouchSurfaceList
 
     @Override
     public void onDrawFrame(GL10 gl) {
-        //if(touched) return;
+
 
         gl.glClear(GL10.GL_COLOR_BUFFER_BIT | GL10.GL_DEPTH_BUFFER_BIT);
 
@@ -83,25 +85,31 @@ public class PictureRenderer implements GLSurfaceView.Renderer, TouchSurfaceList
         gl.glLoadIdentity();                  // Reset the current model-view matrix
         gl.glTranslatef(-coord.camX, -coord.camY, -coord.camZ);   // Translate into the screen
 
-        if(!touched){
+        if(!touched||!modeIsDraw){
         gl.glRotatef(base.getXAngle(), 1.0f, 0.0f, 0.0f); // Rotate accel x
         gl.glRotatef(base.getYAngle(), 0.0f, 1.0f, 0.0f); // Rotate accel y
         gl.glRotatef(base.getZAngle(), 0.0f, 0.0f, 1.0f); // Rotate accel y
         //
         }
         else  base.returnSurfaceAngle();
-        //cube.draw(gl);
+
         pictureSurface.draw(gl);
 
-        // Update the rotational angle after each refresh.
 
 
 
     }
 
+
+
     @Override
     public void OnTouch(float x,float y) {
-        pictureSurface.touch(coord.getX(x),coord.getY(y));
+        if (modeIsDraw){
+            Log.d(TAG,"on touch"+String.valueOf(x));
+            pictureSurface.touch(coord.getX(x),coord.getY(y),coord.camZ);
+        }
+
+
 
 
 
@@ -119,4 +127,26 @@ public class PictureRenderer implements GLSurfaceView.Renderer, TouchSurfaceList
         pictureSurface.untouch();
         Log.d(TAG,"stop touch");
     }
+
+    public boolean  changeMode(){
+        modeIsDraw=!modeIsDraw;
+        return modeIsDraw;
+    }
+
+    public void setMode(boolean isDraw){
+        modeIsDraw =isDraw;
+    }
+
+
+    public void zoomCam(float scale){
+
+        coord.camZ+=scale;
+    }
+
+    public void moveCam(float dx,float dy){
+
+        coord.camX+=coord.getCamXAdd(dx);
+        coord.camY+=coord.getCamYAdd(dy);
+    }
+
 }

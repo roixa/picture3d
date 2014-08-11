@@ -6,8 +6,14 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+import android.view.View;
+import android.widget.ImageButton;
 
 import com.tomsksummer.roix.picture3d.GLEngine.PictureSurfaceView;
 import com.tomsksummer.roix.picture3d.GLEngine.mSurfaceView;
@@ -18,16 +24,42 @@ public class PictureActivity extends Activity {
     private PictureSurfaceView mGLSurfaceView;
     private SensorManager sensorManager;
     private Sensor sensorAccel;//accelerator sensor
+    private ImageButton handButton;
+    private ImageButton bendButton;
+    private ImageButton undoButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        setContentView(R.layout.activity_picture);
+        mGLSurfaceView = ( PictureSurfaceView)findViewById(R.id.surfaceView);
+        handButton=(ImageButton)findViewById(R.id.handButton);
+        bendButton=(ImageButton)findViewById(R.id.bendButton);
+        undoButton=(ImageButton)findViewById(R.id.undoButton);
 
-        mGLSurfaceView = new PictureSurfaceView(this);
+        View.OnClickListener buttonsListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                switch (v.getId()){
+                    case R.id.handButton:
+                        //handButton.setSelected(!mGLSurfaceView.changeMode());
+                        mGLSurfaceView.setMoveMode();
+                        break;
+                    case R.id.bendButton:
+                        mGLSurfaceView.setDrawMode();
+                        break;
+                }
 
-        setContentView(mGLSurfaceView);
+            }
+        };
+
+        handButton.setOnClickListener(buttonsListener);
+        bendButton.setOnClickListener(buttonsListener);
+        undoButton.setOnClickListener(buttonsListener);
+
     }
 
 
@@ -49,6 +81,53 @@ public class PictureActivity extends Activity {
         super.onPause();
         mGLSurfaceView.onPause();
     }
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event){
+
+        // Be sure to call the superclass implementation
+        return super.onTouchEvent(event);
+    }
+
+
+
+    class Gesture extends GestureDetector.SimpleOnGestureListener{
+        public boolean onSingleTapUp(MotionEvent ev) {
+            return true;
+        }
+        public void onLongPress(MotionEvent ev) {
+
+        }
+        private float dist=0;
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
+                                float distanceY) {
+            if(e1.getPointerCount()>1||e2.getPointerCount()>1){
+                return false;
+            }
+            dist+=distanceX;
+            Log.d("scale", "on scroll" + String.valueOf(dist));
+            return true;
+        }
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                               float velocityY) {
+            return true;
+        }
+    }
+
+
+
+
+    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
+        @Override
+        public boolean onScale(ScaleGestureDetector detector) {
+            float scale = detector.getScaleFactor();
+
+            Log.d("scale ", String.valueOf(scale));
+            return true;
+        }
+    }
+
 
     float[] valuesAccel = new float[3];
 
